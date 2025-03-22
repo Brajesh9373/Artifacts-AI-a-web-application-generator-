@@ -6,10 +6,6 @@ import os
 import time
 import zipfile
 
-import webbrowser
-webbrowser.open("https://artifacts-ai-backend.onrender.com/")
-
-
 # Set page configuration
 st.set_page_config(page_title="Artifacts Ai", layout="wide")
 
@@ -206,17 +202,7 @@ def remove_first_and_last_line(file_path: str) -> None:
 
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
-    try:
-        def run_script():
-            try:
-                path= os.path.abspath("sandbox_creator.js")
-                result = subprocess.run(
-                    ["node",path],
-                    capture_output=True, text=True, shell=True, encoding="utf-8"
-                )
-                return result.stdout
-            except Exception as e:
-                return e
+    try
             
         file_path = os.path.abspath("add.tsx")
         remove_first_and_last_line(file_path)
@@ -266,5 +252,3 @@ if st.sidebar.button("Website Preview"):
             if "Preview URL:" in line:
                 url = line.split("Preview URL:")[1].strip()
                 webbrowser.open(url)
-
-
