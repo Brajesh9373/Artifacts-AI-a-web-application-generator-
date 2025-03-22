@@ -185,6 +185,19 @@ if st.sidebar.button("View Latest Component"):
 
 if st.sidebar.button("Website Preview"):
     try:
+        st.components.v1.html("<script>showOverlay();</script>", height=0)
+
+        def run_script():
+            try:
+                file_path1 = os.path.abspath("sandbox_creator.js")
+                result = subprocess.run(
+                    ["node",file_path1],
+                    capture_output=True, text=True, shell=True, encoding="utf-8"
+                )
+                return result.stdout
+            except Exception as e:
+                return e
+                
         # Call the backend endpoint to trigger sandbox creation
         response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
         
