@@ -2,6 +2,8 @@ const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
 const cors = require("cors");
+const { exec } = require("child_process");
+
 
 const app = express();
 app.use(express.json());
@@ -10,7 +12,7 @@ app.use(cors());
 const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
 
 const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
-const FILE_PATH = "D:\\artifacts-ai\\add.tsx"; // Ensure this path is correct and writable
+const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
 
 function getSystemPrompt(shadcn = false) {
   let systemPrompt = `
@@ -249,6 +251,22 @@ function startStreamlitApp() {
 
 // Start the Streamlit app
 //startStreamlitApp();
+
+app.get("/preview", (req, res) => {
+  exec("node sandbox_creator.js", (error, stdout, stderr) => {
+    if (error) {
+      console.error("Error running sandbox_creator.js:", error);
+      return res.status(500).json({ error: "Failed to create preview." });
+    }
+
+    const match = stdout.match(/Preview URL:\s*(https?:\/\/[^\s]+)/);
+    if (match) {
+      return res.json({ url: match[1] });
+    }
+
+    return res.status(500).json({ error: "Preview URL not found in output." });
+  });
+});
 
 
 const PORT = 5000;
