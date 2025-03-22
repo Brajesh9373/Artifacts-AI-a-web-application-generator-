@@ -172,15 +172,24 @@ if st.sidebar.button("View Latest Component"):
         st.error(f"❌ Error: {str(e)}")
 
 if st.sidebar.button("Website Preview"):
-    def run_script():
-        try:
-            result = subprocess.run(
-                ["node","D:\\artifacts-ai\\sandbox_creator.js"],
-                capture_output=True, text=True, shell=True, encoding="utf-8"
-            )
-            return result.stdout
-        except Exception as e:
-            return e
+    try:
+        # Call the backend endpoint to trigger sandbox creation
+        response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
+        
+        if response.status_code == 200:
+            url = response.json().get("url")
+            if url:
+                st.success("✅ Preview Created!")
+                st.markdown(f"[🔗 Open Preview]({url})", unsafe_allow_html=True)
+                webbrowser.open(url)
+            else:
+                st.error("❌ Preview URL not found in response.")
+        else:
+            st.error("❌ Backend failed to generate preview.")
+    
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
+
     
     def remove_first_and_last_line(file_path: str) -> None:
         try:
