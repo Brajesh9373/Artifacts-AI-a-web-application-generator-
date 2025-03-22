@@ -3,7 +3,6 @@ const axios = require("axios");
 const fs = require("fs");
 const cors = require("cors");
 const path = require("path");
-const fs = require("fs");
 const { exec } = require("child_process");
 const open = require("open");
 
@@ -311,12 +310,13 @@ app.get("/preview", (req, res) => {
       const previewUrl = match[1];
 
       // Optional: auto-open preview locally (not in cloud environments)
-      // try {
-      //   await open(previewUrl);
-      //   console.log("✅ Preview opened in browser.");
-      // } catch (err) {
-      //   console.error("⚠️ Could not open preview:", err.message);
-      // }
+      try {
+        await open(previewUrl);
+        console.log("✅ Preview opened in browser.");
+      } 
+      catch (err) {
+           console.error("⚠️ Could not open preview:", err.message);
+       }
 
       return res.json({ url: previewUrl });
     }
