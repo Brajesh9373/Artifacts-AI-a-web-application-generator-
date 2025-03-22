@@ -183,29 +183,56 @@ if st.sidebar.button("View Latest Component"):
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
 
+# ✅ Function to remove first & last line from add.tsx
+def remove_first_and_last_line(file_path: str) -> None:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
 
- # Simulate execution with overlay
-    st.write("Executing script...")
-    stdout = run_script()
+        if len(lines) <= 2:
+            return  # Too short to process
 
-    # Hide overlay
-    st.components.v1.html("<script>hideOverlay();</script>", height=0)
+        first_line = lines[0].strip()
+        last_line = lines[-1].strip()
 
-    if stdout:
-        filtered_output = "\n".join(
-            line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
-        )
-        st.text_area("Output:", filtered_output, height=200)
-        for line in filtered_output.split("\n"):
-            if "Preview URL:" in line:
-                url = line.split("Preview URL:")[1].strip()
+        start = 1 if first_line.startswith(("```", '"""')) else 0
+        end = -1 if last_line.startswith(("```", '"""')) else None
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.writelines(lines[start:end])
+    except Exception as e:
+        print(f"❌ Error cleaning file: {e}")
+
+st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
+if st.sidebar.button("Website Preview"):
+    try:
+        file_path = os.path.abspath("add.tsx")
+        remove_first_and_last_line(file_path)
+        st.write("🧹 Cleaned add.tsx for preview...")
+
+        # Call backend to trigger sandbox creation
+        response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
+
+        if response.status_code == 200:
+            url = response.json().get("url")
+            if url:
+                st.success("✅ Preview Created!")
+                st.markdown(f"[🔗 Open Preview]({url})", unsafe_allow_html=True)
                 webbrowser.open(url)
+            else:
+                st.error("❌ Preview URL not found.")
+        else:
+            st.error("❌ Backend failed to generate preview.")
+    
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
+
 
     file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
     # Simulate execution with overlay
     st.write("Executing script...")
-    stdout = run_script()
+    stdout = True
 
     # Hide overlay
     st.components.v1.html("<script>hideOverlay();</script>", height=0)
