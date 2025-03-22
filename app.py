@@ -191,7 +191,7 @@ def remove_first_and_last_line(file_path: str) -> None:
             lines = file.readlines()
 
         # Define fence markers to strip
-        fence_markers = ['```', '```tsx', '"""', "'''",tsx,typescript,react]
+        fence_markers = ['```', '```tsx', '"""', "'''"]
 
         # Remove lines that are *only* fences (after stripping)
         cleaned_lines = [line for line in lines if line.strip() not in fence_markers]
