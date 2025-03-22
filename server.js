@@ -247,7 +247,7 @@ function startStreamlitApp() {
 }
 
 // Start the Streamlit app
-startStreamlitApp();
+//startStreamlitApp();
 
 
 const PORT = 5000;
