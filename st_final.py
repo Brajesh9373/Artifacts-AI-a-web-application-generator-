@@ -183,3 +183,87 @@ if st.sidebar.button("View Latest Component"):
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
 
+
+# ✅ Function to remove first & last line from add.tsx
+def remove_first_and_last_line(file_path: str) -> None:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        # Define fence markers to strip
+        fence_markers = ['```', '```tsx', '"""', "'''"]
+
+        # Remove lines that are *only* fences (after stripping)
+        cleaned_lines = [line for line in lines if line.strip() not in fence_markers]
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.writelines(cleaned_lines)
+
+    except Exception as e:
+        print(f"❌ Error cleaning file: {e}")
+
+
+st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
+if st.sidebar.button("Website Preview"):
+    try:
+        def run_script():
+            try:
+                path= os.path.abspath("sandbox_creator.js")
+                result = subprocess.run(
+                    ["node",path],
+                    capture_output=True, text=True, shell=True, encoding="utf-8"
+                )
+                return result.stdout
+            except Exception as e:
+                return e
+            
+        file_path = os.path.abspath("add.tsx")
+        remove_first_and_last_line(file_path)
+        st.write("🧹 Cleaned add.tsx for preview...")
+
+        # Call backend to trigger sandbox creation
+        response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
+
+        if response.status_code == 200:
+            url = response.json().get("url")
+            if url:
+                st.success("✅ Preview Created!")
+                st.markdown(f"[🔗 Open Preview]({url})", unsafe_allow_html=True)
+                webbrowser.open(url)
+            else:
+                st.error("❌ Preview URL not found.")
+        else:
+            st.error("❌ Backend failed to generate preview.")
+    
+    except Exception as e:
+        st.error(f"❌ Error: {str(e)}")
+
+
+    file_path = os.path.abspath("add.tsx")
+    remove_first_and_last_line(file_path)
+    st.write("Executing script...")
+
+    # Simulate execution with overlay
+    stdout = True
+
+    # Hide overlay
+    st.components.v1.html("<script>hideOverlay();</script>", height=0)
+
+    # Simulate execution with overlay
+    #st.write("Executing script...")
+    stdout = run_script()
+
+    # Hide overlay
+    st.components.v1.html("<script>hideOverlay();</script>", height=0)
+
+    if stdout:
+        filtered_output = "\n".join(
+            line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
+        )
+        st.text_area("Output:", filtered_output, height=200)
+        for line in filtered_output.split("\n"):
+            if "Preview URL:" in line:
+                url = line.split("Preview URL:")[1].strip()
+                webbrowser.open(url)
+
+
