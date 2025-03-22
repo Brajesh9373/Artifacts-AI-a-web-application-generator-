@@ -6,6 +6,52 @@ import os
 import time
 import zipfile
 
+
+
+
+
+
+
+def clean_file(file_path):
+    import os
+
+    symbols = ["typescript", "tsx", "react", "javascript", "```", "'''", '"""', "#"]
+
+    # Read all lines from file
+    with open(file_path, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+
+    if not lines:
+        print("The file is empty.")
+        return
+
+    # Flags to track lines to remove
+    remove_first = any(symbol in lines[0].lower() for symbol in symbols)
+    remove_last = any(symbol in lines[-1].lower() for symbol in symbols)
+
+    # Debug print
+    print(f"Removing first line: {remove_first}, Removing last line: {remove_last}")
+
+    # Modify the lines accordingly
+    if remove_first:
+        lines = lines[1:]
+    if remove_last and lines:  # recheck to avoid removing from empty list
+        lines = lines[:-1]
+
+    # Write the updated lines back to the file
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.writelines(lines)
+
+    print("File cleaned and saved successfully.")
+
+
+
+
+
+
+
+
+
 # Set page configuration
 st.set_page_config(page_title="Artifacts Ai", layout="wide")
 
@@ -200,26 +246,35 @@ def remove_first_and_last_line(file_path: str) -> None:
         print(f"❌ Error cleaning file: {e}")
 
 
+# Function to execute Node.js script
+def run_script():
+    try:
+        path = os.path.abspath("sandbox_creator.js")
+        result = subprocess.run(
+            ["node", path],
+            capture_output=True,
+            text=True,
+            shell=True,
+            encoding="utf-8"
+        )
+        return result.stdout
+    except Exception as e:
+        return str(e)
+
+# UI Element - Animation Wrapper
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
+
+# Button in the sidebar
 if st.sidebar.button("Website Preview"):
     try:
-        def run_script():
-            try:
-                path= os.path.abspath("sandbox_creator.js")
-                result = subprocess.run(
-                    ["node",path],
-                    capture_output=True, text=True, shell=True, encoding="utf-8"
-                )
-                return result.stdout
-            except Exception as e:
-                return e
+        # Clean the TypeScript file
         file_path = os.path.abspath("add.tsx")
+        clean_file(file_path)
         remove_first_and_last_line(file_path)
-        st.write("🧹 Cleaned add.tsx for preview...")
+        st.write("🧹 Cleaned `add.tsx` for preview...")
 
-        # Call backend to trigger sandbox creation
+        # Call backend API to trigger sandbox creation
         response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
-
         if response.status_code == 200:
             url = response.json().get("url")
             if url:
@@ -230,34 +285,29 @@ if st.sidebar.button("Website Preview"):
                 st.error("❌ Preview URL not found.")
         else:
             st.error("❌ Backend failed to generate preview.")
-    
+
+        # Execute Node.js script
+        st.write("🚀 Executing script...")
+        stdout = run_script()
+
+        # Optionally hide overlay if available
+        st.components.v1.html(
+            "<script>if (typeof hideOverlay === 'function') hideOverlay();</script>", height=0
+        )
+
+        # Display output from Node.js script
+        if stdout:
+            filtered_output = "\n".join(
+                line for line in stdout.split("\n")
+                if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
+            )
+            st.text_area("📜 Output:", filtered_output, height=200)
+
+            # Try to find and open URL from script output
+            for line in filtered_output.split("\n"):
+                if "Preview URL:" in line:
+                    script_url = line.split("Preview URL:")[1].strip()
+                    webbrowser.open(script_url)
+
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
-
-
-    file_path = os.path.abspath("add.tsx")
-    remove_first_and_last_line(file_path)
-    st.write("Executing script...")
-
-    # Simulate execution with overlay
-    stdout = run_script()
-
-    # Hide overlay
-    st.components.v1.html("<script>hideOverlay();</script>", height=0)
-
-    # Simulate execution with overlay
-    st.write("Executing script...")
-    stdout = run_script()
-
-    # Hide overlay
-    st.components.v1.html("<script>hideOverlay();</script>", height=0)
-
-    if stdout:
-        filtered_output = "\n".join(
-            line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
-        )
-        st.text_area("Output:", filtered_output, height=200)
-        for line in filtered_output.split("\n"):
-            if "Preview URL:" in line:
-                url = line.split("Preview URL:")[1].strip()
-                webbrowser.open(url)
