@@ -183,24 +183,46 @@ if st.sidebar.button("View Latest Component"):
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
 
+
+def remove_first_and_last_line(file_path: str) -> None:
+    """
+    Removes the first and last line of a file if they contain markdown or code fences (``` or """).
+    This is useful for cleaning up AI-generated code blocks.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+
+        if len(lines) <= 2:
+            return  # Too short to clean
+
+        # Trim whitespace and detect code fences
+        first_line = lines[0].strip()
+        last_line = lines[-1].strip()
+
+        start = 1 if first_line.startswith(("```", '"""')) else 0
+        end = -1 if last_line.startswith(("```", '"""')) else None
+
+        cleaned_lines = lines[start:end]
+
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.writelines(cleaned_lines)
+
+    except Exception as e:
+        print(f"❌ Error cleaning file: {e}")
+
+# === Website Preview Button ===
+st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
     try:
-        st.components.v1.html("<script>showOverlay();</script>", height=0)
+        # Clean the add.tsx file to remove markdown fences
+        file_path = os.path.abspath("add.tsx")
+        remove_first_and_last_line(file_path)
+        st.write("🧹 Cleaned up add.tsx for preview...")
 
-        def run_script():
-            try:
-                file_path1 = os.path.abspath("sandbox_creator.js")
-                result = subprocess.run(
-                    ["node",file_path1],
-                    capture_output=True, text=True, shell=True, encoding="utf-8"
-                )
-                return result.stdout
-            except Exception as e:
-                return e
-                
-        # Call the backend endpoint to trigger sandbox creation
+        # Call the backend to trigger sandbox_creator.js
         response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
-        
+
         if response.status_code == 200:
             url = response.json().get("url")
             if url:
@@ -210,27 +232,11 @@ if st.sidebar.button("Website Preview"):
             else:
                 st.error("❌ Preview URL not found in response.")
         else:
-            st.error("❌ Backend failed to generate preview.")
-    
+            st.error(response.json().get("error", "❌ Backend failed to create preview."))
+
     except Exception as e:
         st.error(f"❌ Error: {str(e)}")
 
-    
-    def remove_first_and_last_line(file_path: str) -> None:
-        try:
-            with open(file_path, 'r', encoding='utf-8') as file:
-                lines = file.readlines()
-            
-            if len(lines) <= 2:
-                return
-            
-            start = 1 if ('```' in lines[0] or '"""' in lines[0]) else 0
-            end = -1 if ('```' in lines[-1] or '"""' in lines[-1]) else None
-            
-            with open(file_path, 'w', encoding='utf-8') as file:
-                file.writelines(lines[start:end])
-        except Exception as e:
-            print(f"Error processing file: {e}")
 
     file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
