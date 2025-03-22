@@ -185,10 +185,7 @@ if st.sidebar.button("View Latest Component"):
 
 
 def remove_first_and_last_line(file_path: str) -> None:
-    """
-    Removes the first and last line of a file if they contain markdown or code fences (``` or """).
-    This is useful for cleaning up AI-generated code blocks.
-    """
+    
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
