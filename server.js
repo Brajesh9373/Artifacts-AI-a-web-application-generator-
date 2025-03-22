@@ -2,8 +2,10 @@ const express = require("express");
 const axios = require("axios");
 const fs = require("fs");
 const cors = require("cors");
+const path = require("path");
+const fs = require("fs");
 const { exec } = require("child_process");
-
+const open = require("open");
 
 const app = express();
 app.use(express.json());
@@ -252,18 +254,74 @@ function startStreamlitApp() {
 // Start the Streamlit app
 //startStreamlitApp();
 
+const sanitizeFile = (filePath) => {
+  try {
+    if (!fs.existsSync(filePath)) return;
+
+    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
+
+    const indicators = [
+      "typescript", "tsx", "react", "javascript",
+      "```", "'''", '"""', "#"
+    ];
+
+    const firstLine = lines[0].trim().toLowerCase();
+    const lastLine = lines[lines.length - 1].trim().toLowerCase();
+
+    let start = 0;
+    let end = lines.length;
+
+    if (indicators.some((kw) => firstLine.includes(kw))) {
+      start = 1;
+    }
+    if (indicators.some((kw) => lastLine.includes(kw))) {
+      end -= 1;
+    }
+
+    const cleaned = lines.slice(start, end).join("\n");
+    fs.writeFileSync(filePath, cleaned, "utf-8");
+    console.log("✅ add.tsx sanitized.");
+  } catch (err) {
+    console.error("❌ Error sanitizing add.tsx:", err.message);
+  }
+};
+
+// --- /preview Endpoint ---
 app.get("/preview", (req, res) => {
-  exec("node sandbox_creator.js", (error, stdout, stderr) => {
+  const filePath = path.resolve(__dirname, "add.tsx");
+  const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
+
+  if (!fs.existsSync(scriptPath)) {
+    return res.status(500).json({ error: "sandbox_creator.js not found." });
+  }
+
+  // Step 1: Sanitize the add.tsx file
+  sanitizeFile(filePath);
+
+  // Step 2: Run sandbox_creator.js to generate preview
+  exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
     if (error) {
-      console.error("Error running sandbox_creator.js:", error);
+      console.error("❌ Error running sandbox_creator.js:", error.message || error);
+      if (stderr) console.error("stderr:", stderr);
       return res.status(500).json({ error: "Failed to create preview." });
     }
 
     const match = stdout.match(/Preview URL:\s*(https?:\/\/[^\s]+)/);
     if (match) {
-      return res.json({ url: match[1] });
+      const previewUrl = match[1];
+
+      // Optional: auto-open preview locally (not in cloud environments)
+      // try {
+      //   await open(previewUrl);
+      //   console.log("✅ Preview opened in browser.");
+      // } catch (err) {
+      //   console.error("⚠️ Could not open preview:", err.message);
+      // }
+
+      return res.json({ url: previewUrl });
     }
 
+    console.warn("⚠️ Preview URL not found in script output.");
     return res.status(500).json({ error: "Preview URL not found in output." });
   });
 });
