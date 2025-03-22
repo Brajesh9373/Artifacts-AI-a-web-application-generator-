@@ -237,13 +237,4 @@ if st.sidebar.button("Website Preview"):
     # Hide overlay
     st.components.v1.html("<script>hideOverlay();</script>", height=0)
 
-    if stdout:
-        filtered_output = "\n".join(
-            line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
-        )
-        st.text_area("Output:", filtered_output, height=200)
-        for line in filtered_output.split("\n"):
-            if "Preview URL:" in line:
-                url = line.split("Preview URL:")[1].strip()
-                webbrowser.open(url)
- 
+    
