@@ -241,7 +241,6 @@ if st.sidebar.button("Website Preview"):
     file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
     # Simulate execution with overlay
-    st.write("Executing script...")
     stdout = True
 
     # Hide overlay
