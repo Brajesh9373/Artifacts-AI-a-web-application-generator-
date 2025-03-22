@@ -59,7 +59,7 @@ if st.button("Generate"):
         st.info("⏳ Thinking... Please wait.")
         try:
             response = requests.post(
-                "http://localhost:5000/generate-react",
+                "https://artifacts-ai-backend.onrender.com/generate-react",
                 json={"userInput": user_input},
                 headers={"Content-Type": "application/json"},
             )
@@ -102,7 +102,7 @@ if st.button("Modify"):
         st.info("⏳ Modifying... Please wait.")
         try:
             response = requests.post(
-                "http://localhost:5000/modify-react",
+                "https://artifacts-ai-backend.onrender.com/modify-react",
                 json={"userInput": modification_input},
                 headers={"Content-Type": "application/json"},
             )
@@ -160,7 +160,7 @@ if st.sidebar.button("Download"):
 
 if st.sidebar.button("View Latest Component"):
     try:
-        response = requests.get("http://localhost:5000/view-latest")
+        response = requests.get("https://artifacts-ai-backend.onrender.com/view-latest")
         if response.status_code == 200:
             data = response.json()
             if "code" in data:
