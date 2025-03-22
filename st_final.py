@@ -6,6 +6,10 @@ import os
 import time
 import zipfile
 
+import subprocess
+
+subprocess.run(["node", "server.js"])
+
 # Set page configuration
 st.set_page_config(page_title="Artifacts Ai", layout="wide")
 
