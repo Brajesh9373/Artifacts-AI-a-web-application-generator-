@@ -68,6 +68,7 @@ function deleteFirstAndLastLine() {
     } else {
       console.log("❌ File does not exist.");
     }
+    return True
   } catch (error) {
     console.error("❌ Error deleting first and last lines:", error);
   }
@@ -156,6 +157,7 @@ app.post("/modify-react", async (req, res) => {
     - Returns the entire React code.
     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.
     - You are not allowed to use comments in entire response 
+    - You are not allowed to mention any programming language name in entire repsonse 
     `;
 
     const response = await axios.post(
@@ -287,6 +289,14 @@ const sanitizeFile = (filePath) => {
 
 // --- /preview Endpoint ---
 app.get("/preview", (req, res) => {
+  const flag = deleteFirstAndLastLine();
+  if (flag == True){
+    console.log("✅ delete");
+  }
+  else{
+    console.log("❌ delete");
+  }
+  
   const filePath = path.resolve(__dirname, "add.tsx");
   const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
 
@@ -325,6 +335,7 @@ app.get("/preview", (req, res) => {
     return res.status(500).json({ error: "Preview URL not found in output." });
   });
 });
+
 
 
 const PORT = 5000;
