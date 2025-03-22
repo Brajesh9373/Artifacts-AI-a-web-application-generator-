@@ -255,78 +255,19 @@ function startStreamlitApp() {
 // Start the Streamlit app
 //startStreamlitApp();
 
-function sanitizeFile(filePath) {
-  try {
-    if (!fs.existsSync(filePath)) return;
-
-    const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-    const indicators = ["typescript", "tsx", "react", "javascript", "```", "'''", '"""', "#"];
-
-    let start = 0;
-    let end = lines.length;
-
-    if (indicators.some((kw) => lines[0].trim().toLowerCase().includes(kw))) start = 1;
-    if (indicators.some((kw) => lines[lines.length - 1].trim().toLowerCase().includes(kw))) end -= 1;
-
-    const cleaned = lines.slice(start, end).join("\n");
-    fs.writeFileSync(filePath, cleaned, "utf-8");
-    console.log("✅ add.tsx sanitized.");
-  } catch (error) {
-    console.error("❌ Error sanitizing add.tsx:", error.message);
-  }
-}
-
-// --- /preview Endpoint ---
-// --- Preview Generation ---
 app.get("/preview", (req, res) => {
-  
-  
-  const filePath = path.resolve(__dirname, "add.tsx");
-  const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
-
-  if (!fs.existsSync(scriptPath)) {
-    return res.status(500).json({ error: "sandbox_creator.js not found." });
-  }
-
-  const flag = deleteFirstAndLastLine();
-  if (flag == true){
-    console.log("✅ delete");
-  }
-  else{
-    console.log("❌ delete");
-  }
-
-  // Step 1: Remove first and last lines
-  const deleted = deleteFirstAndLastLine();
-  console.log(deleted ? "✅ Deleted first/last line" : "❌ Nothing deleted");
-
-  // Step 2: Sanitize the file
-  sanitizeFile(filePath);
-
-  // Step 3: Run sandbox_creator.js to generate preview
-  exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
+  exec("node sandbox_creator.js", (error, stdout, stderr) => {
     if (error) {
-      console.error("❌ Error running sandbox_creator.js:", error.message);
+      console.error("Error running sandbox_creator.js:", error);
       return res.status(500).json({ error: "Failed to create preview." });
     }
 
     const match = stdout.match(/Preview URL:\s*(https?:\/\/[^\s]+)/);
     if (match) {
-      const previewUrl = match[1];
-
-      // Optional: Auto-open preview (local only, not on cloud)
-      try {
-        await open(previewUrl);
-        console.log("✅ Preview opened in browser.");
-      } catch (err) {
-        console.error("⚠️ Could not auto-open preview:", err.message);
-      }
-
-      return res.json({ url: previewUrl });
+      return res.json({ url: match[1] });
     }
 
-    console.warn("⚠️ Preview URL not found in script output.");
-    return res.status(500).json({ error: "Preview URL not found." });
+    return res.status(500).json({ error: "Preview URL not found in output." });
   });
 });
 
