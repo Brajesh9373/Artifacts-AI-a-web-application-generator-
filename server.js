@@ -255,21 +255,53 @@ function startStreamlitApp() {
 // Start the Streamlit app
 //startStreamlitApp();
 
+
 app.get("/preview", (req, res) => {
-  exec("node sandbox_creator.js", (error, stdout, stderr) => {
-    if (error) {
-      console.error("Error running sandbox_creator.js:", error);
-      return res.status(500).json({ error: "Failed to create preview." });
+  const filePath = path.resolve(__dirname, "add.tsx");
+  const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
+  const clearScript = path.resolve(__dirname, "clear.py");
+
+  if (!fs.existsSync(scriptPath)) {
+    return res.status(500).json({ error: "sandbox_creator.js not found." });
+  }
+
+  // Step 1: Run clear.py before proceeding
+  exec(`python3 "${clearScript}"`, (clearError, clearStdout, clearStderr) => {
+    if (clearError) {
+      console.error("❌ Error running clear.py:", clearError.message);
+      return res.status(500).json({ error: "Failed to execute clear.py." });
     }
 
-    const match = stdout.match(/Preview URL:\s*(https?:\/\/[^\s]+)/);
-    if (match) {
-      return res.json({ url: match[1] });
-    }
+    console.log("📜 clear.py output:", clearStdout);
 
-    return res.status(500).json({ error: "Preview URL not found in output." });
+    // Step 2: Continue with sandbox creation after clearing
+    exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
+      if (error) {
+        console.error("❌ Error running sandbox_creator.js:", error.message);
+        return res.status(500).json({ error: "Failed to create preview." });
+      }
+
+      const match = stdout.match(/Preview URL:\s*(https?:\/\/[^\s]+)/);
+      if (match) {
+        const previewUrl = match[1];
+
+        // Optional: Auto-open preview locally (not on cloud servers)
+        try {
+          await open(previewUrl);
+          console.log("✅ Preview opened in browser.");
+        } catch (err) {
+          console.error("⚠️ Could not auto-open preview:", err.message);
+        }
+
+        return res.json({ url: previewUrl });
+      }
+
+      console.warn("⚠️ Preview URL not found in script output.");
+      return res.status(500).json({ error: "Preview URL not found." });
+    });
   });
 });
+
 
 
 const PORT = 5000;
