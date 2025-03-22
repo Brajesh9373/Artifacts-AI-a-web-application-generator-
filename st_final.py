@@ -189,19 +189,18 @@ def remove_first_and_last_line(file_path: str) -> None:
         with open(file_path, 'r', encoding='utf-8') as file:
             lines = file.readlines()
 
-        if len(lines) <= 2:
-            return  # Too short to process
+        # Define fence markers to strip
+        fence_markers = ['```', '```tsx', '"""', "'''"]
 
-        first_line = lines[0].strip()
-        last_line = lines[-1].strip()
-
-        start = 1 if first_line.startswith(("```", '"""')) else 0
-        end = -1 if last_line.startswith(("```", '"""')) else None
+        # Remove lines that are *only* fences (after stripping)
+        cleaned_lines = [line for line in lines if line.strip() not in fence_markers]
 
         with open(file_path, 'w', encoding='utf-8') as file:
-            file.writelines(lines[start:end])
+            file.writelines(cleaned_lines)
+
     except Exception as e:
         print(f"❌ Error cleaning file: {e}")
+
 
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
