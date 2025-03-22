@@ -6,7 +6,7 @@ import os
 import time
 import zipfile
 
-import subprocess
+webbrowser.open("https://artifacts-ai-backend.onrender.com/")
 
 
 # Set page configuration
