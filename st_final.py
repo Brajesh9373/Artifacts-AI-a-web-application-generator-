@@ -135,23 +135,35 @@ if st.button("Modify"):
 # Download Button
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Download"):
-    # Copy content from add.tsx to files/App.tsx
-    add_file_path = "D:\\artifacts-ai\\add.tsx"
-    app_file_path = "D:\\artifacts-ai\\files\\App.tsx"
+    # Define correct paths (relative to app root)
+    add_file_path = "add.tsx"
+    app_file_path = os.path.join("files", "App.tsx")
+    zip_file_path = "files.zip"
+
+    # Ensure files directory exists
+    os.makedirs("files", exist_ok=True)
+
+    try:
+        # Copy content from add.tsx to files/App.tsx
+        with open(add_file_path, 'r', encoding='utf-8') as add_file:
+            add_content = add_file.read()
+
+        with open(app_file_path, 'w', encoding='utf-8') as app_file:
+            app_file.write(add_content)
+
+        # Create a zip of the files/ directory
+        with zipfile.ZipFile(zip_file_path, 'w') as zip_file:
+            for foldername, subfolders, filenames in os.walk("files"):
+                for filename in filenames:
+                    file_path = os.path.join(foldername, filename)
+                    zip_file.write(file_path, os.path.relpath(file_path, "files"))
+
+        # Provide the download button
+        with open(zip_file_path, "rb") as f:
+            st.sidebar.download_button("Confirm Download", f, file_name="files.zip")
     
-    with open(add_file_path, 'r', encoding='utf-8') as add_file:
-        add_content = add_file.read()
-    
-    with open(app_file_path, 'w', encoding='utf-8') as app_file:
-        app_file.write(add_content)
-    
-    # Create a zip file of the files/ directory
-    zip_file_path = "D:\\artifacts-ai\\files.zip"
-    with zipfile.ZipFile(zip_file_path, 'w') as zip_file:
-        for foldername, subfolders, filenames in os.walk("D:\\artifacts-ai\\files"):
-            for filename in filenames:
-                file_path = os.path.join(foldername, filename)
-                zip_file.write(file_path, os.path.relpath(file_path, "D:\\artifacts-ai\\files"))
+    except Exception as e:
+        st.sidebar.error(f"❌ Error during download preparation: {e}")
     
     # Provide download link for the zip file
     with open(zip_file_path, "rb") as f:
