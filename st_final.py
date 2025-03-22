@@ -205,6 +205,17 @@ def remove_first_and_last_line(file_path: str) -> None:
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
     try:
+        def run_script():
+            try:
+                path= os.path.abspath("sandbox_creator.js")
+                result = subprocess.run(
+                    ["node",path],
+                    capture_output=True, text=True, shell=True, encoding="utf-8"
+                )
+                return result.stdout
+            except Exception as e:
+                return e
+            
         file_path = os.path.abspath("add.tsx")
         remove_first_and_last_line(file_path)
         st.write("🧹 Cleaned add.tsx for preview...")
@@ -236,4 +247,19 @@ if st.sidebar.button("Website Preview"):
     # Hide overlay
     st.components.v1.html("<script>hideOverlay();</script>", height=0)
 
-    
+    # Simulate execution with overlay
+    st.write("Executing script...")
+    stdout = run_script()
+
+    # Hide overlay
+    st.components.v1.html("<script>hideOverlay();</script>", height=0)
+
+    if stdout:
+        filtered_output = "\n".join(
+            line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
+        )
+        st.text_area("Output:", filtered_output, height=200)
+        for line in filtered_output.split("\n"):
+            if "Preview URL:" in line:
+                url = line.split("Preview URL:")[1].strip()
+                webbrowser.open(url)
