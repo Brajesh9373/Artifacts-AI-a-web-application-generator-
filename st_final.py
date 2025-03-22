@@ -249,7 +249,7 @@ if st.sidebar.button("Website Preview"):
     st.components.v1.html("<script>hideOverlay();</script>", height=0)
 
     # Simulate execution with overlay
-    st.write("Executing script...")
+    #st.write("Executing script...")
     stdout = run_script()
 
     # Hide overlay
