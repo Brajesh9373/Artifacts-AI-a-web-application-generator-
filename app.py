@@ -6,6 +6,9 @@ import os
 import time
 import zipfile
 
+import webbrowser
+webbrowser.open("https://artifacts-ai-backend.onrender.com/")
+
 # Set page configuration
 st.set_page_config(page_title="Artifacts Ai", layout="wide")
 
@@ -240,7 +243,7 @@ if st.sidebar.button("Website Preview"):
     st.write("Executing script...")
 
     # Simulate execution with overlay
-    stdout = True
+    stdout = run_script()
 
     # Hide overlay
     st.components.v1.html("<script>hideOverlay();</script>", height=0)
