@@ -35,7 +35,7 @@ function getSystemPrompt(shadcn = false) {
     `;
   }
 
-  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links `;
+  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse `;
   return systemPrompt;
 }
 
@@ -68,7 +68,7 @@ function deleteFirstAndLastLine() {
     } else {
       console.log("❌ File does not exist.");
     }
-    return True
+    return true
   } catch (error) {
     console.error("❌ Error deleting first and last lines:", error);
   }
@@ -255,47 +255,31 @@ function startStreamlitApp() {
 // Start the Streamlit app
 //startStreamlitApp();
 
-const sanitizeFile = (filePath) => {
+function sanitizeFile(filePath) {
   try {
     if (!fs.existsSync(filePath)) return;
 
     const lines = fs.readFileSync(filePath, "utf-8").split("\n");
-
-    const indicators = [
-      "typescript", "tsx", "react", "javascript",
-      "```", "'''", '"""', "#"
-    ];
-
-    const firstLine = lines[0].trim().toLowerCase();
-    const lastLine = lines[lines.length - 1].trim().toLowerCase();
+    const indicators = ["typescript", "tsx", "react", "javascript", "```", "'''", '"""', "#"];
 
     let start = 0;
     let end = lines.length;
 
-    if (indicators.some((kw) => firstLine.includes(kw))) {
-      start = 1;
-    }
-    if (indicators.some((kw) => lastLine.includes(kw))) {
-      end -= 1;
-    }
+    if (indicators.some((kw) => lines[0].trim().toLowerCase().includes(kw))) start = 1;
+    if (indicators.some((kw) => lines[lines.length - 1].trim().toLowerCase().includes(kw))) end -= 1;
 
     const cleaned = lines.slice(start, end).join("\n");
     fs.writeFileSync(filePath, cleaned, "utf-8");
     console.log("✅ add.tsx sanitized.");
-  } catch (err) {
-    console.error("❌ Error sanitizing add.tsx:", err.message);
+  } catch (error) {
+    console.error("❌ Error sanitizing add.tsx:", error.message);
   }
-};
+}
 
 // --- /preview Endpoint ---
+// --- Preview Generation ---
 app.get("/preview", (req, res) => {
-  const flag = deleteFirstAndLastLine();
-  if (flag == True){
-    console.log("✅ delete");
-  }
-  else{
-    console.log("❌ delete");
-  }
+  
   
   const filePath = path.resolve(__dirname, "add.tsx");
   const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
@@ -304,14 +288,25 @@ app.get("/preview", (req, res) => {
     return res.status(500).json({ error: "sandbox_creator.js not found." });
   }
 
-  // Step 1: Sanitize the add.tsx file
+  const flag = deleteFirstAndLastLine();
+  if (flag == true){
+    console.log("✅ delete");
+  }
+  else{
+    console.log("❌ delete");
+  }
+
+  // Step 1: Remove first and last lines
+  const deleted = deleteFirstAndLastLine();
+  console.log(deleted ? "✅ Deleted first/last line" : "❌ Nothing deleted");
+
+  // Step 2: Sanitize the file
   sanitizeFile(filePath);
 
-  // Step 2: Run sandbox_creator.js to generate preview
+  // Step 3: Run sandbox_creator.js to generate preview
   exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
     if (error) {
-      console.error("❌ Error running sandbox_creator.js:", error.message || error);
-      if (stderr) console.error("stderr:", stderr);
+      console.error("❌ Error running sandbox_creator.js:", error.message);
       return res.status(500).json({ error: "Failed to create preview." });
     }
 
@@ -319,23 +314,21 @@ app.get("/preview", (req, res) => {
     if (match) {
       const previewUrl = match[1];
 
-      // Optional: auto-open preview locally (not in cloud environments)
+      // Optional: Auto-open preview (local only, not on cloud)
       try {
         await open(previewUrl);
         console.log("✅ Preview opened in browser.");
-      } 
-      catch (err) {
-           console.error("⚠️ Could not open preview:", err.message);
-       }
+      } catch (err) {
+        console.error("⚠️ Could not auto-open preview:", err.message);
+      }
 
       return res.json({ url: previewUrl });
     }
 
     console.warn("⚠️ Preview URL not found in script output.");
-    return res.status(500).json({ error: "Preview URL not found in output." });
+    return res.status(500).json({ error: "Preview URL not found." });
   });
 });
-
 
 
 const PORT = 5000;
