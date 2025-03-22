@@ -202,7 +202,7 @@ def remove_first_and_last_line(file_path: str) -> None:
 
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
-    try
+    try:
             
         file_path = os.path.abspath("add.tsx")
         remove_first_and_last_line(file_path)
