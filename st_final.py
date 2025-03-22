@@ -207,7 +207,7 @@ if st.sidebar.button("Website Preview"):
         except Exception as e:
             print(f"Error processing file: {e}")
 
-    file_path = os.path.abspath("D:\\artifacts-ai\\add.tsx")
+    file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
     st.write("Executing script...")
     stdout = run_script()
