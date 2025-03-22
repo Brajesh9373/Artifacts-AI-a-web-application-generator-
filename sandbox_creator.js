@@ -1,7 +1,19 @@
-const open = require("open");
 const fs = require("fs");
-const generatedReactCode = fs.readFileSync("D:\\artifacts-ai\\add.tsx", "utf8");
+const path = require("path");
 
+// ✅ Correct path to match your structure
+const FILE_PATH = path.resolve(__dirname, "add.tsx");
+
+// ✅ Check if file exists
+if (!fs.existsSync(FILE_PATH)) {
+  console.error("❌ add.tsx not found. Please generate a component first.");
+  process.exit(1);
+}
+
+// ✅ Read the generated React code
+const generatedReactCode = fs.readFileSync(FILE_PATH, "utf8");
+
+// ✅ Simulate sandbox creation (replace this logic with actual API if using Codesandbox API)
 async function createSandbox() {
   try {
     console.log("Creating sandbox...");
