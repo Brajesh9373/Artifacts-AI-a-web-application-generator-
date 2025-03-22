@@ -238,7 +238,8 @@ if st.sidebar.button("Website Preview"):
     file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
     st.write("Executing script...")
-    #stdout = run_script()
+    """
+    stdout = run_script()
     if stdout:
         filtered_output = "\n".join(
             line for line in stdout.split("\n") if "Creating sandbox..." not in line and "✅ Sandbox Created Successfully!" not in line
@@ -248,3 +249,4 @@ if st.sidebar.button("Website Preview"):
             if "Preview URL:" in line:
                 url = line.split("Preview URL:")[1].strip()
                 webbrowser.open(url)
+                """
