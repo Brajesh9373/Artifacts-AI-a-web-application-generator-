@@ -7,7 +7,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-const API_KEY = process.env.TOGETHER_API_KEY;
+const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
 
 const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 const FILE_PATH = "D:\\artifacts-ai\\add.tsx"; // Ensure this path is correct and writable
