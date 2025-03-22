@@ -203,7 +203,16 @@ def remove_first_and_last_line(file_path: str) -> None:
 st.markdown("<div class='submit-btn fade-in'>", unsafe_allow_html=True)
 if st.sidebar.button("Website Preview"):
     try:
-            
+        def run_script():
+            try:
+                path= os.path.abspath("sandbox_creator.js")
+                result = subprocess.run(
+                    ["node",path],
+                    capture_output=True, text=True, shell=True, encoding="utf-8"
+                )
+                return result.stdout
+            except Exception as e:
+                return e
         file_path = os.path.abspath("add.tsx")
         remove_first_and_last_line(file_path)
         st.write("🧹 Cleaned add.tsx for preview...")
