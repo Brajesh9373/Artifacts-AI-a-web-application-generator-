@@ -215,7 +215,7 @@ if st.sidebar.button("Website Preview"):
         # Clean the add.tsx file to remove markdown fences
         file_path = os.path.abspath("add.tsx")
         remove_first_and_last_line(file_path)
-        #st.write("🧹 Cleaned up add.tsx for preview...")
+        print("🧹 Cleaned up add.tsx for preview...")
 
         # Call the backend to trigger sandbox_creator.js
         response = requests.get("https://artifacts-ai-backend.onrender.com/preview")
@@ -237,5 +237,5 @@ if st.sidebar.button("Website Preview"):
 
     file_path = os.path.abspath("add.tsx")
     remove_first_and_last_line(file_path)
-    st.write("Executing script...")
+    print("Executing script...")
  
