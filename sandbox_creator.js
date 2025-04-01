@@ -1,15 +1,11 @@
 import path from "path";
 import { fileURLToPath } from "url";
+import open from "open";
+import fs from "fs";
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-
-import open from "open";
-import { readFileSync } from "fs";
-
-import fs from "fs";
 
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
 
@@ -24,6 +20,7 @@ const generatedReactCode = fs.readFileSync(FILE_PATH, "utf8");
 
 // ✅ Simulate sandbox creation (replace this logic with actual API if using Codesandbox API)
 async function createSandbox(retries = 3, delay = 2000) {
+
   try {
     console.log("Creating sandbox...");
 
