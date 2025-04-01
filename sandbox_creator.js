@@ -1,15 +1,16 @@
-import open from "open";
-import { readFileSync } from "fs";
-import path from 'path';  // Add this line at the top of your file
-
-
-// ✅ Correct path to match your structure
-import { fileURLToPath } from "url";
-import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
+// Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+
+import open from "open";
+import { readFileSync } from "fs";
+
+import fs from "fs";
+import path from "path";
 
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
 
