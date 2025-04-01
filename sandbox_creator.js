@@ -1,5 +1,5 @@
-const fs = require("fs");
-const path = require("path");
+import open from "open";
+import { readFileSync } from "fs";
 
 // ✅ Correct path to match your structure
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
@@ -14,7 +14,7 @@ if (!fs.existsSync(FILE_PATH)) {
 const generatedReactCode = fs.readFileSync(FILE_PATH, "utf8");
 
 // ✅ Simulate sandbox creation (replace this logic with actual API if using Codesandbox API)
-async function createSandbox() {
+async function createSandbox(retries = 3, delay = 2000) {
   try {
     console.log("Creating sandbox...");
 
@@ -211,24 +211,44 @@ async function createSandbox() {
       })
     });
 
-    const data = await response.json();
+   if (!response.ok) {
+      throw new Error(`❌ API request failed with status ${response.status}: ${response.statusText}`);
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      throw new Error("❌ Failed to parse JSON response from CodeSandbox API.");
+    }
+
     if (data.sandbox_id) {
       const sandboxId = data.sandbox_id;
-      
-      // ✅ Generate direct preview URL
       const previewUrl = `https://${sandboxId}.codesandbox.io/`;
 
       console.log("✅ Sandbox Created Successfully!");
       console.log("🌍 Preview URL:", previewUrl);
-      
-      // Open in a new window
-      await open(previewUrl, { app: { name: 'chrome', arguments: ['--new-window'] } });
+
+      try {
+        // Fix: Ensure `open` is properly called
+        await open(previewUrl, { app: { name: "chrome", arguments: ["--new-window"] } });
+      } catch (openError) {
+        console.error("🚨 Error opening browser:", openError.message);
+      }
 
     } else {
-      console.error("❌ Failed to create sandbox:", data);
+      throw new Error(`❌ Unexpected API response: ${JSON.stringify(data, null, 2)}`);
     }
+
   } catch (error) {
-    console.error("🚨 Error:", error);
+    console.error("🚨 Error:", error.message);
+
+    if (retries > 0) {
+      console.log(`🔄 Retrying in ${delay / 1000} seconds... (${retries} attempts left)`);
+      setTimeout(() => createSandbox(retries - 1, delay * 2), delay);
+    } else {
+      console.error("❌ Maximum retry attempts reached. Sandbox creation failed.");
+    }
   }
 }
 
