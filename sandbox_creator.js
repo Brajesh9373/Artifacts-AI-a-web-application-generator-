@@ -237,7 +237,7 @@ async function createSandbox(retries = 3, delay = 2000) {
 
       try {
         // Fix: Ensure `open` is properly called
-        await open(previewUrl, { app: { name: "chrome", arguments: ["--new-window"] } });
+        await open(previewUrl);
       } catch (openError) {
         console.error("🚨 Error opening browser:", openError.message);
       }
