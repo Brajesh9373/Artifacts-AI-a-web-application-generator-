@@ -10,7 +10,6 @@ import open from "open";
 import { readFileSync } from "fs";
 
 import fs from "fs";
-import path from "path";
 
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
 
