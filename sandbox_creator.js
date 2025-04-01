@@ -1,5 +1,7 @@
 import open from "open";
 import { readFileSync } from "fs";
+import path from 'path';  // Add this line at the top of your file
+
 
 // ✅ Correct path to match your structure
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
