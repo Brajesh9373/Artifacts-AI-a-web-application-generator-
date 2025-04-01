@@ -4,6 +4,13 @@ import path from 'path';  // Add this line at the top of your file
 
 
 // ✅ Correct path to match your structure
+import { fileURLToPath } from "url";
+import fs from "fs";
+import path from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const FILE_PATH = path.resolve(__dirname, "add.tsx");
 
 // ✅ Check if file exists
