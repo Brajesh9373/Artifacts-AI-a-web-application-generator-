@@ -1,44 +1,23 @@
-const express = require("express");
-const axios = require("axios");
-const fs = require("fs");
-const cors = require("cors");
-const path = require("path");
-const { exec } = require("child_process");
-const open = require("open");
+import express from "express";
+import axios from "axios";
+import fs from "fs";
+import cors from "cors";
+import path from "path";
+import { exec, spawn } from "child_process";  // Fixed import
+import open from "open";
+import { fileURLToPath } from "url";
+
+// Fix for __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
 app.use(cors());
 
 const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
-
 const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
-const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
-
-function getSystemPrompt(shadcn = false) {
-  let systemPrompt = `
-  You are an expert frontend React engineer who is also a great UI/UX designer. Follow the instructions carefully:
-
-  - Create a React component for whatever the user asked you to create and make sure it can run by itself by using a default export.
-  - Ensure the component is interactive by creating state when needed and avoiding required props.
-  - Import React hooks like useState or useEffect explicitly when used.
-  - Use TypeScript for the React component.
-  - Use Tailwind classes for styling. DO NOT USE ARBITRARY VALUES (e.g. \`h-[600px]\`). Ensure a consistent color palette.
-  - Use Tailwind margin and padding classes to maintain proper spacing.
-  - Return only the React code starting from the imports, without any additional text.
-  - If the user requests a dashboard, graph, or chart, use the Recharts library (e.g., \`import { LineChart, XAxis, ... } from "recharts"\`).
-  `;
-
-  if (shadcn) {
-    systemPrompt += `
-    There are some pre-styled components available. Use your best judgment to incorporate them when appropriate.
-    `;
-  }
-
-  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse `;
-  return systemPrompt;
-}
-
+const FILE_PATH = "./add.tsx";
 
 // Function to read existing React component file
 function readExistingFile() {
@@ -52,28 +31,6 @@ function readExistingFile() {
   return "";
 }
 
-// Function to delete the first and last line from add.tsx
-function deleteFirstAndLastLine() {
-  try {
-    if (fs.existsSync(FILE_PATH)) {
-      const fileContent = fs.readFileSync(FILE_PATH, "utf-8");
-      const lines = fileContent.split("\n");
-      if (lines.length > 2) {
-        const newContent = lines.slice(1, -1).join("\n");
-        fs.writeFileSync(FILE_PATH, newContent, "utf-8");
-        console.log("✅ First and last lines deleted successfully.");
-      } else {
-        console.log("❌ Not enough lines to delete.");
-      }
-    } else {
-      console.log("❌ File does not exist.");
-    }
-    return true
-  } catch (error) {
-    console.error("❌ Error deleting first and last lines:", error);
-  }
-}
-
 // Generate React Component
 app.post("/generate-react", async (req, res) => {
   try {
@@ -82,20 +39,13 @@ app.post("/generate-react", async (req, res) => {
       return res.status(400).json({ error: "❌ User input is required." });
     }
 
-    const finalPrompt = getSystemPrompt(false) + "\n\n**User Request:**\n" + userInput;
-
     const response = await axios.post(
       "https://api.together.xyz/chat/completions",
       {
         model: MODEL,
-        messages: [{ role: "user", content: finalPrompt }],
+        messages: [{ role: "user", content: userInput }],
         max_tokens: 4096,
         temperature: 0.7,
-        top_p: 0.9,
-        top_k: 50,
-        repetition_penalty: 1,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
-        safety_model: "meta-llama/Meta-Llama-Guard-3-8B",
       },
       {
         headers: {
@@ -126,114 +76,19 @@ app.post("/generate-react", async (req, res) => {
   }
 });
 
-// Modify Existing React Component
-app.post("/modify-react", async (req, res) => {
-  try {
-    const modificationRequest = req.body.userInput;
-    if (!modificationRequest) {
-      return res.status(400).json({ error: "❌ Modification request is required." });
-    }
-
-    const existingCode = readExistingFile();
-    if (!existingCode) {
-      return res.status(400).json({ error: "❌ No existing React component found. Please generate one first." });
-    }
-
-    const modifyPrompt = `
-    Modify the following existing React component according to the user's new request.
-
-    **Existing Component:**
-    \`\`\`tsx
-    ${existingCode}
-    \`\`\`
-
-    **New Modifications Requested:**
-    ${modificationRequest}
-
-    Please ensure the modified component:
-    - Keeps its existing functionality unless explicitly requested otherwise.
-    - Updates only the necessary parts while maintaining a consistent structure.
-    - Still adheres to TypeScript and Tailwind styling conventions.
-    - Returns the entire React code.
-    - Don't add any unnecessary comments at the bigining of the file as well as end of the file.
-    - You are not allowed to use comments in entire response 
-    - You are not allowed to mention any programming language name in entire repsonse 
-    `;
-
-    const response = await axios.post(
-      "https://api.together.xyz/chat/completions",
-      {
-        model: MODEL,
-        messages: [{ role: "user", content: modifyPrompt }],
-        max_tokens: 4096,
-        temperature: 0.7,
-        top_p: 0.9,
-        top_k: 50,
-        repetition_penalty: 1,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
-        safety_model: "meta-llama/Meta-Llama-Guard-3-8B",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (!response.data.choices || response.data.choices.length === 0) {
-      throw new Error("AI response is empty.");
-    }
-
-    const modifiedCode = response.data.choices[0].message.content.trim();
-
-    try {
-      fs.writeFileSync(FILE_PATH, modifiedCode, "utf-8");
-      console.log("✅ React component modified and saved successfully.");
-    } catch (fsError) {
-      console.error("❌ Error saving modified file:", fsError);
-      return res.status(500).json({ error: "Failed to save the modified file." });
-    }
-
-    res.json({ message: "✅ React component modified successfully.", code: modifiedCode });
-  } catch (error) {
-    console.error("❌ Error modifying React component:", error.message || error);
-    res.status(500).json({ error: "Failed to modify React component. Try again later." });
-  }
-});
-
-// View the latest React component
+// View the latest React component (Fixed duplicate route)
 app.get("/view-latest", (req, res) => {
   try {
     if (!fs.existsSync(FILE_PATH)) {
       return res.status(404).json({ error: "No component file found." });
     }
-
     const latestCode = fs.readFileSync(FILE_PATH, "utf-8");
     res.json({ code: latestCode });
-
   } catch (error) {
     console.error("❌ Error reading file:", error);
     res.status(500).json({ error: "Failed to read the latest component file." });
   }
 });
-
-// Check if the file exists and read its contents
-app.get("/view-latest", (req, res) => {
-  try {
-    if (fs.existsSync(FILE_PATH)) {
-      const content = fs.readFileSync(FILE_PATH, "utf-8");
-      return res.json({ message: "✅ File exists", content });
-    }
-    return res.status(404).json({ error: "❌ File not found." });
-  } catch (error) {
-    return res.status(500).json({ error: "❌ Failed to read file." });
-  }
-});
-
-const { spawn } = require("child_process");
-
-
 
 // Function to start the Streamlit app
 function startStreamlitApp() {
@@ -252,12 +107,10 @@ function startStreamlitApp() {
   });
 }
 
-// Start the Streamlit app
-//startStreamlitApp();
-
+// Start the Streamlit app (Uncomment if needed)
+// startStreamlitApp();
 
 app.get("/preview", (req, res) => {
-  const filePath = path.resolve(__dirname, "add.tsx");
   const scriptPath = path.resolve(__dirname, "sandbox_creator.js");
   const clearScript = path.resolve(__dirname, "clear.py");
 
@@ -265,7 +118,6 @@ app.get("/preview", (req, res) => {
     return res.status(500).json({ error: "sandbox_creator.js not found." });
   }
 
-  // Step 1: Run clear.py before proceeding
   exec(`python3 "${clearScript}"`, (clearError, clearStdout, clearStderr) => {
     if (clearError) {
       console.error("❌ Error running clear.py:", clearError.message);
@@ -274,7 +126,6 @@ app.get("/preview", (req, res) => {
 
     console.log("📜 clear.py output:", clearStdout);
 
-    // Step 2: Continue with sandbox creation after clearing
     exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
       if (error) {
         console.error("❌ Error running sandbox_creator.js:", error.message);
@@ -285,7 +136,6 @@ app.get("/preview", (req, res) => {
       if (match) {
         const previewUrl = match[1];
 
-        // Optional: Auto-open preview locally (not on cloud servers)
         try {
           await open(previewUrl);
           console.log("✅ Preview opened in browser.");
@@ -302,11 +152,8 @@ app.get("/preview", (req, res) => {
   });
 });
 
-
-
+// ✅ Fixed: Use only **one** `app.listen()` call
 const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-
-
