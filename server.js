@@ -246,7 +246,7 @@ app.get("/view-latest", (req, res) => {
   }
 });
 
-const { spawn } = require("child_process");
+import { spawn } from "child_process";
 
 
 
