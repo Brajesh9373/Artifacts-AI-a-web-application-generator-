@@ -19,10 +19,12 @@ app.get("/", (req, res) => {
   res.send("Server is running!");
 });
 
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
+
 
 
 const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
