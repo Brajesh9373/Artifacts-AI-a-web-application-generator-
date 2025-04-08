@@ -281,7 +281,7 @@ app.get("/preview", (req, res) => {
   }
 
   // Step 1: Run clear.py before proceeding
-  exec(python3 "${clearScript}", (clearError, clearStdout, clearStderr) => {
+  exec(`python3 "${clearScript}"`, (clearError, clearStdout, clearStderr) => {
     if (clearError) {
       console.error("❌ Error running clear.py:", clearError.message);
       return res.status(500).json({ error: "Failed to execute clear.py." });
