@@ -31,7 +31,7 @@ const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
 
 function getSystemPrompt(shadcn = false) {
-  let systemPrompt = "
+  let systemPrompt = `
   You are an expert frontend React engineer who is also a great UI/UX designer. Follow the instructions carefully:
 
   - Create a React component for whatever the user asked you to create and make sure it can run by itself by using a default export.
@@ -41,16 +41,16 @@ function getSystemPrompt(shadcn = false) {
   - Use Tailwind classes for styling. DO NOT USE ARBITRARY VALUES (e.g. \h-[600px]\). Ensure a consistent color palette.
   - Use Tailwind margin and padding classes to maintain proper spacing.
   - Return only the React code starting from the imports, without any additional text.
-  - If the user requests a dashboard, graph, or chart, use the Recharts library (e.g., \import { LineChart, XAxis, ... } from "recharts"\). "
+  - If the user requests a dashboard, graph, or chart, use the Recharts library (e.g., \import { LineChart, XAxis, ... } from "recharts"\). `
   ;
 
   if (shadcn) {
-    systemPrompt += "
-    There are some pre-styled components available. Use your best judgment to incorporate them when appropriate."
+    systemPrompt += `
+    There are some pre-styled components available. Use your best judgment to incorporate them when appropriate.`
     ;
   }
 
-  systemPrompt += "\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse ";
+  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse `;
   return systemPrompt;
 }
 
@@ -154,7 +154,7 @@ app.post("/modify-react", async (req, res) => {
       return res.status(400).json({ error: "❌ No existing React component found. Please generate one first." });
     }
 
-    const modifyPrompt = "
+    const modifyPrompt = `
     Modify the following existing React component according to the user's new request.
 
     **Existing Component:**
@@ -172,7 +172,7 @@ app.post("/modify-react", async (req, res) => {
     - Returns the entire React code.
     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.
     - You are not allowed to use comments in entire response 
-    - You are not allowed to mention any programming language name in entire repsonse "
+    - You are not allowed to mention any programming language name in entire repsonse `
     ;
 
     const response = await axios.post(
@@ -321,5 +321,5 @@ app.get("/preview", (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => {
-  console.log(🚀 Server running on http://localhost:${PORT});
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
