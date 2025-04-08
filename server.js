@@ -114,7 +114,7 @@ app.post("/generate-react", async (req, res) => {
       },
       {
         headers: {
-          Authorization: Bearer ${API_KEY},
+          Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -190,7 +190,7 @@ app.post("/modify-react", async (req, res) => {
       },
       {
         headers: {
-          Authorization: Bearer ${API_KEY},
+          Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
       }
