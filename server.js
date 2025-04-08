@@ -263,7 +263,7 @@ function startStreamlitApp() {
   });
 
   streamlitProcess.on("exit", (code) => {
-    console.log(Streamlit app exited with code ${code});
+    console.log(`Streamlit app exited with code ${code}`);
   });
 }
 
