@@ -20,10 +20,17 @@ app.get("/", (req, res) => {
 });
 
 
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT;
+
+if (!PORT) {
+  throw new Error("🚨 PORT environment variable is not set.");
+}
+
 app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
+
+
 
 
 
