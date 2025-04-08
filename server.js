@@ -290,7 +290,7 @@ app.get("/preview", (req, res) => {
     console.log("📜 clear.py output:", clearStdout);
 
     // Step 2: Continue with sandbox creation after clearing
-    exec(node "${scriptPath}", async (error, stdout, stderr) => {
+    exec(`node "${scriptPath}"`, async (error, stdout, stderr) => {
       if (error) {
         console.error("❌ Error running sandbox_creator.js:", error.message);
         return res.status(500).json({ error: "Failed to create preview." });
