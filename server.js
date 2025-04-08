@@ -20,19 +20,17 @@ app.get("/", (req, res) => {
 });
 
 
+// ❗ Get port from Render's environment, do not default to 10000
 const PORT = process.env.PORT;
 
 if (!PORT) {
-  throw new Error("🚨 PORT environment variable is not set.");
+  console.error("❌ process.env.PORT is undefined. Render requires this to be set.");
+  process.exit(1);
 }
 
 app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
-
-
-
-
 
 const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
 
