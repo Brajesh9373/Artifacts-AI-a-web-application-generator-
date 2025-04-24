@@ -57,7 +57,7 @@ function getSystemPrompt(shadcn = true){
     ;
   }
 
-  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse\n  CHECK FOR THE ERRORS (" ESPECIALLY FOR ReferenceError ")IN GENERATED CODE TWICE AND SOLVE THEM  `;
+  systemPrompt += `\n  NO OTHER LIBRARIES (e.g., zod, hookform) ARE INSTALLED OR ALLOWED.\n     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.\n    -You are not allowed to use comments in entire response as well as Any type of links     - You are not allowed to use comments in entire response - You are not allowed to mention any programming language name in entire repsonse.`;
   return systemPrompt;
 }
 
