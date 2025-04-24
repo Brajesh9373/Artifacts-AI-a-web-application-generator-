@@ -37,7 +37,7 @@ const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75
 const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
 
-function getSystemPrompt(shadcn = false) {
+function getSystemPrompt(shadcn = true
   let systemPrompt = `
   You are an expert frontend React engineer who is also a great UI/UX designer. Follow the instructions carefully:
 
