@@ -32,7 +32,7 @@ app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
 
-const API_KEY = "f0bf422847a86fecc909ebdc5157cf4e906566ef46fda11ab1e02d1fe353b75f";
+const API_KEY = "60e6d3bac60c01c25ef31f0af1ad7ef719aff0ebb2bed7c4ec19c1735b1bc624";
 
 const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
 const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
