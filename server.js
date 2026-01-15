@@ -6,6 +6,10 @@ import path from "path";
 import { exec } from "child_process";
 import open from "open";
 import { fileURLToPath } from "url";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 // Fix for __dirname in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -32,9 +36,9 @@ app.listen(PORT, () => {
   console.log(`✅ Server running on port ${PORT}`);
 });
 
-const API_KEY = "60e6d3bac60c01c25ef31f0af1ad7ef719aff0ebb2bed7c4ec19c1735b1bc624";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "YOUR_GEMINI_API_KEY_HERE";
 
-const MODEL = "meta-llama/Llama-3.3-70B-Instruct-Turbo";
+const MODEL = "gemini-2.5-flash"; // Using Gemini 2.5 Flash model for free tier
 const FILE_PATH = "./add.tsx"; // Ensure this path is correct and writable
 
 function getSystemPrompt(shadcn = false){
@@ -107,31 +111,32 @@ app.post("/generate-react", async (req, res) => {
     const finalPrompt = getSystemPrompt(false) + "\n\n**User Request:**\n" + userInput;
 
     const response = await axios.post(
-      "https://api.together.xyz/chat/completions",
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
       {
-        model: MODEL,
-        messages: [{ role: "user", content: finalPrompt }],
-        max_tokens: 4096,
-        temperature: 0.7,
-        top_p: 0.9,
-        top_k: 50,
-        repetition_penalty: 1,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
-        safety_model: "meta-llama/Meta-Llama-Guard-3-8B",
+        contents: [{
+          parts: [{
+            text: finalPrompt
+          }]
+        }],
+        generationConfig: {
+          maxOutputTokens: 4096,
+          temperature: 0.7,
+          topP: 0.9,
+          topK: 50
+        }
       },
       {
         headers: {
-          Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
       }
     );
 
-    if (!response.data.choices || response.data.choices.length === 0) {
+    if (!response.data.candidates || response.data.candidates.length === 0) {
       throw new Error("AI response is empty.");
     }
 
-    const generatedCode = response.data.choices[0].message.content.trim();
+    const generatedCode = response.data.candidates[0].content.parts[0].text.trim();
 
     try {
       fs.writeFileSync(FILE_PATH, generatedCode, "utf-8");
@@ -178,36 +183,37 @@ app.post("/modify-react", async (req, res) => {
     - Still adheres to TypeScript and Tailwind styling conventions.
     - Returns the entire React code.
     - Don't add any unnecessary comments at the bigining of the file as well as end of the file.
-    - You are not allowed to use comments in entire response 
+    - You are not allowed to use comments in entire response
     - You are not allowed to mention any programming language name in entire repsonse `
     ;
 
     const response = await axios.post(
-      "https://api.together.xyz/chat/completions",
+      `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${GEMINI_API_KEY}`,
       {
-        model: MODEL,
-        messages: [{ role: "user", content: modifyPrompt }],
-        max_tokens: 4096,
-        temperature: 0.7,
-        top_p: 0.9,
-        top_k: 50,
-        repetition_penalty: 1,
-        stop: ["<|eot_id|>", "<|eom_id|>"],
-        safety_model: "meta-llama/Meta-Llama-Guard-3-8B",
+        contents: [{
+          parts: [{
+            text: modifyPrompt
+          }]
+        }],
+        generationConfig: {
+          maxOutputTokens: 4096,
+          temperature: 0.7,
+          topP: 0.9,
+          topK: 50
+        }
       },
       {
         headers: {
-          Authorization: `Bearer ${API_KEY}`,
           "Content-Type": "application/json",
         },
       }
     );
 
-    if (!response.data.choices || response.data.choices.length === 0) {
+    if (!response.data.candidates || response.data.candidates.length === 0) {
       throw new Error("AI response is empty.");
     }
 
-    const modifiedCode = response.data.choices[0].message.content.trim();
+    const modifiedCode = response.data.candidates[0].content.parts[0].text.trim();
 
     try {
       fs.writeFileSync(FILE_PATH, modifiedCode, "utf-8");
